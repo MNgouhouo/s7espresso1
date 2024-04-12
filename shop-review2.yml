@@ -6,7 +6,7 @@ metadata:
     version: v2
     app: mamadou1
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: mamadou1
