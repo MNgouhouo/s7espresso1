@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop-web
+  labels:
+    app: mamadou
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mamadou
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: mamadou
+        version: v1
+    spec:
+      containers:
+      - name: my-container
+        image:  mngouhouo/mngouhouo:espresso-web
+        ports:
+        - containerPort: 80
+        env:
+        - name: ProductCatalogUrl
+          value: "http://espresso-shop-product-catalog-svc:8091"
+        - name: ReviewsUrl
+          value: "http://espresso-shop-reviews-svc:8092"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: mamadou
+    version: v1
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 80
+      nodePort: 30081
+  type: NodePort
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: shop-web
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-service-account
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: my-pdb
+spec:
+  selector:
+    matchLabels:
+      app: mamadou
+      version: v1
+ minAvailable: 2

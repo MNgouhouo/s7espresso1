@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop-product
+  labels:
+    app: mamadou1
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mamadou1
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: mamadou1
+        version: v1
+    spec:
+      containers:
+      - name: shop-product-container
+        image: mngouhouo/mngouhouo:espresso-product
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: espresso-shop-product-catalog-svc
+spec:
+  selector:
+    app: mamadou1
+    version: v1
+  ports:
+    - protocol: TCP
+      port: 8091
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: shop-product-service-account
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: shop-product-pdb
+spec:
+  selector:
+    matchLabels:
+      app: mamadou1
+      version: v1
+  minAvailable: 1
+
